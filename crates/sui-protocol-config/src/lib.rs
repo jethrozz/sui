@@ -468,6 +468,10 @@ struct FeatureFlags {
     #[serde(skip_serializing_if = "is_false")]
     enable_group_ops_native_function_msm: bool,
 
+    // Enable nitro attestation.
+    #[serde(skip_serializing_if = "is_false")]
+    enable_nitro_attestation: bool,
+
     // Reject functions with mutable Random.
     #[serde(skip_serializing_if = "is_false")]
     reject_mutable_random_on_entry_functions: bool,
@@ -1220,6 +1224,12 @@ pub struct ProtocolConfig {
     vdf_verify_vdf_cost: Option<u64>,
     vdf_hash_to_input_cost: Option<u64>,
 
+    // nitro_attestation::verify_nitro_attestation
+    nitro_attestation_parse_base_cost: Option<u64>,
+    nitro_attestation_parse_cost_per_byte: Option<u64>,
+    nitro_attestation_verify_base_cost: Option<u64>,
+    nitro_attestation_verify_cost_per_cert: Option<u64>,
+
     // Stdlib costs
     bcs_per_byte_serialized_cost: Option<u64>,
     bcs_legacy_min_output_size_cost: Option<u64>,
@@ -1782,8 +1792,13 @@ impl ProtocolConfig {
         self.feature_flags.variant_nodes
     }
 
+<<<<<<< HEAD
     pub fn consensus_zstd_compression(&self) -> bool {
         self.feature_flags.consensus_zstd_compression
+=======
+    pub fn enable_nitro_attestation(&self) -> bool {
+        self.feature_flags.enable_nitro_attestation
+>>>>>>> 2d97ead085 (feat: add move entry function)
     }
 }
 
@@ -2218,6 +2233,12 @@ impl ProtocolConfig {
 
             vdf_verify_vdf_cost: None,
             vdf_hash_to_input_cost: None,
+
+            // nitro_attestation::verify_nitro_attestation
+            nitro_attestation_parse_base_cost: None,
+            nitro_attestation_parse_cost_per_byte: None,
+            nitro_attestation_verify_base_cost: None,
+            nitro_attestation_verify_cost_per_cert: None,
 
             bcs_per_byte_serialized_cost: None,
             bcs_legacy_min_output_size_cost: None,
@@ -3180,12 +3201,20 @@ impl ProtocolConfig {
                         // to be included before be considered garbage collected.
                         cfg.consensus_gc_depth = Some(60);
                         cfg.feature_flags.consensus_linearize_subdag_v2 = true;
+
+                        // Enable nitro attestation for devnet
+                        cfg.feature_flags.enable_nitro_attestation = true;
                     }
 
                     if chain != Chain::Mainnet {
                         // Enable zstd compression for consensus in testnet
                         cfg.feature_flags.consensus_zstd_compression = true;
                     }
+
+                    cfg.nitro_attestation_parse_base_cost = Some(53);
+                    cfg.nitro_attestation_parse_cost_per_byte = Some(1);
+                    cfg.nitro_attestation_verify_base_cost = Some(49632);
+                    cfg.nitro_attestation_verify_cost_per_cert = Some(52369);
                 }
                 // Use this template when making changes:
                 //

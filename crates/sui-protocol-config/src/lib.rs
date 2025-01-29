@@ -1792,13 +1792,12 @@ impl ProtocolConfig {
         self.feature_flags.variant_nodes
     }
 
-<<<<<<< HEAD
     pub fn consensus_zstd_compression(&self) -> bool {
         self.feature_flags.consensus_zstd_compression
-=======
+    }
+
     pub fn enable_nitro_attestation(&self) -> bool {
         self.feature_flags.enable_nitro_attestation
->>>>>>> 2d97ead085 (feat: add move entry function)
     }
 }
 

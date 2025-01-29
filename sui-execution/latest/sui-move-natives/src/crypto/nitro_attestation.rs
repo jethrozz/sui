@@ -19,8 +19,8 @@ use move_vm_runtime::native_charge_gas_early_exit;
 pub const NOT_SUPPORTED_ERROR: u64 = 0;
 pub const PARSE_ERROR: u64 = 1;
 pub const VERIFY_ERROR: u64 = 2;
-// Gas related structs and functions.
 
+// Gas related structs and functions.
 #[derive(Clone)]
 pub struct NitroAttestationCostParams {
     pub parse_base_cost: Option<InternalGas>,
@@ -98,6 +98,7 @@ pub fn verify_nitro_attestation_internal(
                     // Could do this with `and_then` as well if desired.
                     let result = || {
                         Ok(Value::struct_(Struct::pack(vec![
+                            Value::u8(0), // Starts from 0
                             Value::vector_u8(payload.module_id.as_bytes().to_vec()),
                             Value::u64(payload.timestamp),
                             Value::vector_u8(payload.digest.as_bytes().to_vec()),

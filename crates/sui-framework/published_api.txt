@@ -2788,6 +2788,9 @@ sqrt_u128
 divide_and_round_up
 	public fun
 	0x2::math
+PCREntry
+	public struct
+	0x2::nitro_attestation
 NitroAttestationDocument
 	public struct
 	0x2::nitro_attestation
@@ -2806,7 +2809,7 @@ timestamp
 digest
 	public fun
 	0x2::nitro_attestation
-get_pcrs
+pcrs
 	public fun
 	0x2::nitro_attestation
 public_key
@@ -2816,6 +2819,15 @@ user_data
 	public fun
 	0x2::nitro_attestation
 nonce
+	public fun
+	0x2::nitro_attestation
+version
+	public fun
+	0x2::nitro_attestation
+index
+	public fun
+	0x2::nitro_attestation
+value
 	public fun
 	0x2::nitro_attestation
 ObjectBag

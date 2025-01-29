@@ -9,15 +9,25 @@ use sui::clock::{Self, Clock};
 /// Error that the feature is not available on this network.
 const ENotSupportedError: u64 = 0;
 #[allow(unused_const)]
-/// Error that the input failed to be parsed. 
+/// Error that the attestation input failed to be parsed. 
 const EParseError: u64 = 1;
 #[allow(unused_const)]
 /// Error that the attestation failed to be verified. 
 const EVerifyError: u64 = 2;
+#[allow(unused_const)]
+/// Error that the pcrs length is invalid. 
+const EInvalidPcrLength: u64 = 3;
 
+/// Represents a PCR entry with an index and value.
+public struct PCREntry has drop {
+    index: u8,
+    value: vector<u8>
+}
 
 /// Nitro Attestation Document defined for AWS.
-public struct NitroAttestationDocument has store, copy, drop  {
+public struct NitroAttestationDocument has drop  {
+    /// Version
+    version: u8,
     /// Issuing Nitro hypervisor module ID.
     module_id: vector<u8>,
     /// UTC time when document was created, in milliseconds since UNIX epoch.
@@ -54,30 +64,55 @@ public fun verify_nitro_attestation(
     verify_nitro_attestation_internal(attestation, clock::timestamp_ms(clock))
 }
 
+public fun version(attestation: &NitroAttestationDocument): &u8 {
+    &attestation.version
+}
+
 public fun module_id(attestation: &NitroAttestationDocument): vector<u8> {
     attestation.module_id
 }
 
-public fun timestamp(attestation: &NitroAttestationDocument): u64 {
-    attestation.timestamp
+public fun timestamp(attestation: &NitroAttestationDocument): &u64 {
+    &attestation.timestamp
 }
 
-public fun digest(attestation: &NitroAttestationDocument): vector<u8> {
-    attestation.digest
+public fun digest(attestation: &NitroAttestationDocument): &vector<u8> {
+    &attestation.digest
 }
 
-public fun get_pcrs(attestation: &NitroAttestationDocument): vector<vector<u8>> {
-    attestation.pcrs
+/// Returns a list of mapping from index to the pcr itself. Currently AWS supports 
+///PCR0, PCR1, PCR2, PCR3, PCR4, PCR8. 
+public fun pcrs(attestation: &NitroAttestationDocument): vector<PCREntry> {
+    assert!(attestation.pcrs.length() == 6, EInvalidPcrLength);
+    let mut result: vector<PCREntry> = vector::empty();
+    let indices = vector[0, 1, 2, 3, 4, 8];
+    let mut i = 0;
+    while (i < attestation.pcrs.length()) {
+        result.push_back(PCREntry {
+            index: indices[i],
+            value: attestation.pcrs[i]
+        });
+        i = i + 1;
+    };
+    result
 }
 
-public fun public_key(attestation: &NitroAttestationDocument): Option<vector<u8>> {
-    attestation.public_key
+public fun public_key(attestation: &NitroAttestationDocument): &Option<vector<u8>> {
+    &attestation.public_key
 }
 
-public fun user_data(attestation: &NitroAttestationDocument): Option<vector<u8>> {
-    attestation.user_data
+public fun user_data(attestation: &NitroAttestationDocument): &Option<vector<u8>> {
+    &attestation.user_data
 }
 
-public fun nonce(attestation: &NitroAttestationDocument): Option<vector<u8>> {
-    attestation.nonce
+public fun nonce(attestation: &NitroAttestationDocument): &Option<vector<u8>> {
+    &attestation.nonce
+}
+
+public fun index(entry: &PCREntry): u8 {
+    entry.index
+}
+
+public fun value(entry: &PCREntry): &vector<u8> {
+    &entry.value
 }

@@ -1257,7 +1257,7 @@ impl AuthorityState {
         .await
         .tap_err(|e| info!("process_certificate failed: {e}"))
         .tap_ok(
-            |(fx, _)| debug!(?tx_digest, fx_digest=?fx.digest(), "process_certificate succeeded"),
+            |(fx, _)| debug!(?tx_digest, fx_digest=?fx.digest(), dependencies=?fx.dependencies(), "process_certificate succeeded"),
         )
     }
 

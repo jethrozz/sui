@@ -1096,7 +1096,7 @@ impl CheckpointBuilder {
             debug!(
                 checkpoint_commit_height = height,
                 checkpoint_seq = summary.sequence_number,
-                contents_digest = ?contents.digest(),
+                contents = ?contents.iter().map(|c| c.transaction).collect::<Vec<_>>(),
                 "writing checkpoint",
             );
 
@@ -2260,7 +2260,7 @@ impl CheckpointService {
 
         // If this times out, the validator may still start up. The worst that can
         // happen is that we will crash later on (due to missing transactions).
-        if tokio::time::timeout(Duration::from_secs(10), self.wait_for_rebuilt_checkpoints())
+        if tokio::time::timeout(Duration::from_secs(60), self.wait_for_rebuilt_checkpoints())
             .await
             .is_err()
         {

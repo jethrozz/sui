@@ -74,15 +74,21 @@ async function generateAliasFromTs() {
 	if (paths) {
 		Object.keys(paths).forEach((anAlias) => {
 			const aliasPath = paths[anAlias][0];
-			const adjAlias = anAlias.replace(/\/\*$/gi, '');
+			const adjAlias = anAlias.replace(/\/\*$/gi, '/');
+			//const adjAlias = anAlias; //.replace(/\/\*$/gi, '');
+			console.log(anAlias);
+			//如果 anAlias 是以 / 结尾则
 			const adjPath = (
 				aliasPath.startsWith('./') || aliasPath.startsWith('../')
 					? resolve(TS_CONFIGS_ROOT, baseUrl, aliasPath)
 					: aliasPath
 			).replace(/\/\*$/, '');
+
+			console.log(`Processing adjAlias: ${adjAlias}, adjPath: ${adjPath}`); // 添加调试日志
 			alias[adjAlias] = adjPath;
 		});
 	}
+	console.log(alias);
 	return alias;
 }
 
@@ -174,7 +180,9 @@ const commonConfig: () => Promise<Configuration> = async () => {
 			new CopyPlugin({
 				patterns: [
 					{
-						from: resolve(SRC_ROOT, 'manifest', 'icons', '**', '*'),
+						from: resolve(SRC_ROOT, 'manifest', 'icons'), // 修改这里
+						to: resolve(OUTPUT_ROOT, 'manifest', 'icons'), // 添加输出目录
+						noErrorOnMissing: true, // 添加这个选项
 					},
 					{
 						from: resolve(SRC_ROOT, 'manifest', 'manifest.json'),

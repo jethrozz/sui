@@ -91,7 +91,12 @@ export class UiConnection extends Connection {
 		);
 	}
 
+	public async handleExternalMessage(msg: Message) {
+		this.handleMessage(msg);
+	}
+
 	protected async handleMessage(msg: Message) {
+		console.log('ui handleMessage', msg);
 		const { payload, id } = msg;
 		try {
 			if (isGetPermissionRequests(payload)) {
@@ -182,6 +187,7 @@ export class UiConnection extends Connection {
 				this.send(createMessage({ type: 'done' }, id));
 			} else if (isMethodPayload(payload, 'getStoredEntities')) {
 				const entities = await this.getUISerializedEntities(payload.args.type);
+				console.log('ui getStoredEntities', entities);
 				this.send(
 					createMessage<MethodPayload<'storedEntitiesResponse'>>(
 						{

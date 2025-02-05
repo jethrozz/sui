@@ -191,6 +191,7 @@ export async function lockAllAccounts() {
 }
 
 export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConnection) {
+	console.log('accountsHandleUIMessage', msg);
 	const { payload } = msg;
 	if (isMethodPayload(payload, 'lockAccountSourceOrAccount')) {
 		const account = await getAccountByID(payload.args.id);

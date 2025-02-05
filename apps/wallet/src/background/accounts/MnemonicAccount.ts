@@ -123,6 +123,7 @@ export class MnemonicAccount
 	}
 
 	async signData(data: Uint8Array): Promise<string> {
+		console.log('call sign data');
 		const keyPair = await this.#getKeyPair();
 		if (!keyPair) {
 			throw new Error(`Account is locked`);
@@ -147,6 +148,7 @@ export class MnemonicAccount
 
 	async #getKeyPair() {
 		const ephemeralData = await this.getEphemeralValue();
+		console.log(ephemeralData);
 		if (ephemeralData) {
 			return fromExportedKeypair(ephemeralData.keyPair);
 		}

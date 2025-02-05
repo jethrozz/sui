@@ -12,12 +12,20 @@ import Browser from 'webextension-polyfill';
 
 import type { Connection } from './Connection';
 import { ContentScriptConnection } from './ContentScriptConnection';
+import { ExternalConnection } from './ExternalConnection';
 import { UiConnection } from './UiConnection';
+
+const ALLOWED_EXTENSION_IDS = [
+	// 在这里添加允许的扩展ID
+	'extension-id-1',
+	'agmohnjmhmkeojfkfghfkmdmkienigbn',
+];
 
 const appOrigin = new URL(Browser.runtime.getURL('')).origin;
 
 export class Connections {
 	#connections: Connection[] = [];
+	#externalConnections: Map<string, ExternalConnection> = new Map();
 
 	constructor() {
 		Browser.runtime.onConnect.addListener((port) => {
@@ -48,6 +56,33 @@ export class Connections {
 			} catch (e) {
 				port.disconnect();
 			}
+		});
+		// 添加外部消息监听器
+		Browser.runtime.onMessageExternal.addListener(async (request, sender, sendResponse) => {
+			try {
+				console.log('external listener request');
+				// 验证发送者
+				if (!sender.id || !ALLOWED_EXTENSION_IDS.includes(sender.id)) {
+					throw new Error('未授权的扩展ID');
+				}
+				console.log('sender:', sender);
+				// 获取或创建外部连接
+				let externalConnection = this.#externalConnections.get(sender.id);
+				if (!externalConnection) {
+					externalConnection = new ExternalConnection();
+					this.#externalConnections.set(sender.id, externalConnection);
+				}
+
+				// 处理请求
+				const response = await externalConnection.handleMessage(request);
+				return response;
+			} catch (error) {
+				return {
+					success: false,
+					error: error instanceof Error ? error.message : '未知错误',
+				};
+			}
+			return true; // 保持消息通道开放以进行异步响应
 		});
 	}
 
@@ -126,6 +161,14 @@ export class Connections {
 						break;
 				}
 			}
+		}
+	}
+	// 添加用于管理外部连接的方法
+	public disconnectExternalConnection(extensionId: string) {
+		const connection = this.#externalConnections.get(extensionId);
+		if (connection) {
+			this.#externalConnections.delete(extensionId);
+			// 可以在这里添加清理逻辑
 		}
 	}
 }

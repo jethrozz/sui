@@ -54,7 +54,6 @@ export default class ApiProvider {
 				? { env: apiEnv, customRpcUrl: customRPC || '' }
 				: { env: apiEnv, customRpcUrl: null },
 		);
-
 		this._signerByAddress.clear();
 
 		// We also clear the query client whenever set set a new API provider:

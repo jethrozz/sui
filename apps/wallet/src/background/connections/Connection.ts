@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Message } from '_messages';
+import type { Message as BaseMessage } from '_messages';
 import { PortStream } from '_messaging/PortStream';
 import { map, take } from 'rxjs';
 import type { Runtime } from 'webextension-polyfill';
@@ -21,11 +21,11 @@ export abstract class Connection {
 		);
 	}
 
-	public send(msg: Message) {
+	public send(msg: BaseMessage) {
 		if (this._portStream.connected) {
 			return this._portStream.sendMessage(msg);
 		}
 	}
 
-	protected abstract handleMessage(msg: Message): void;
+	protected abstract handleMessage(msg: BaseMessage): void;
 }

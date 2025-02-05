@@ -73,7 +73,9 @@ export async function setToSessionStorageEncrypted<T extends Serializable>(key: 
 	});
 }
 export async function getEncryptedFromSessionStorage<T extends Serializable>(key: string) {
+	console.log('getEncryptedFromSessionStorage', key);
 	const encryptedData = await getFromSessionStorage<{ random: string; data: string }>(key, null);
+	console.log(encryptedData);
 	if (!encryptedData) {
 		return null;
 	}

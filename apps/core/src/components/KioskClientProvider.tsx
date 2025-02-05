@@ -17,6 +17,7 @@ export type KioskClientProviderProps = {
 };
 
 export function KioskClientProvider({ children }: KioskClientProviderProps) {
+	console.log(1);
 	const { client, network } = useSuiClientContext();
 	const kioskNetwork = suiToKioskNetwork[network.toLowerCase()] || Network.CUSTOM;
 	const kioskClient = useMemo(

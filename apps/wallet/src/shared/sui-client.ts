@@ -10,9 +10,12 @@ const suiClientPerNetwork = new Map<string, SuiClient>();
 const SENTRY_MONITORED_ENVS = [API_ENV.mainnet];
 
 export function getSuiClient({ env, customRpcUrl }: NetworkEnvType): SuiClient {
+	console.log(env);
 	const key = `${env}_${customRpcUrl}`;
+	console.log(key);
 	if (!suiClientPerNetwork.has(key)) {
 		const connection = customRpcUrl ? customRpcUrl : ENV_TO_API[env];
+		console.log(connection);
 		if (!connection) {
 			throw new Error(`API url not found for network env ${env} ${customRpcUrl}`);
 		}
@@ -25,6 +28,10 @@ export function getSuiClient({ env, customRpcUrl }: NetworkEnvType): SuiClient {
 						: new SuiHTTPTransport({ url: connection }),
 			}),
 		);
+	}
+	const client = suiClientPerNetwork.get(key);
+	if (!client) {
+		throw new Error('Failed to create SuiClient');
 	}
 	return suiClientPerNetwork.get(key)!;
 }

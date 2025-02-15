@@ -92,6 +92,7 @@ export class UiConnection extends Connection {
 	}
 
 	public async handleExternalMessage(msg: Message) {
+		console.log('ui handleExternalMessage', msg);
 		this.handleMessage(msg);
 	}
 

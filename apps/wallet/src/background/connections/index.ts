@@ -19,12 +19,14 @@ const ALLOWED_EXTENSION_IDS = [
 	// 在这里添加允许的扩展ID
 	'extension-id-1',
 	'agmohnjmhmkeojfkfghfkmdmkienigbn',
+	'bljdfjlaobcgbnelmflmmbjbfeahemie',
 ];
 
 const appOrigin = new URL(Browser.runtime.getURL('')).origin;
 
 export class Connections {
 	#connections: Connection[] = [];
+	#uiConnection: UiConnection | null = null;
 	#externalConnections: Map<string, ExternalConnection> = new Map();
 
 	constructor() {
@@ -41,7 +43,9 @@ export class Connections {
 								`[Connections] UI connections are not allowed for origin ${port.sender?.origin}`,
 							);
 						}
-						connection = new UiConnection(port);
+						const uiConnection = new UiConnection(port);
+						this.#uiConnection = uiConnection;
+						connection = uiConnection as Connection; // 类型断言
 						break;
 					default:
 						throw new Error(`[Connections] Unknown connection ${port.name}`);
@@ -69,7 +73,7 @@ export class Connections {
 				// 获取或创建外部连接
 				let externalConnection = this.#externalConnections.get(sender.id);
 				if (!externalConnection) {
-					externalConnection = new ExternalConnection();
+					externalConnection = new ExternalConnection(this.#uiConnection!);
 					this.#externalConnections.set(sender.id, externalConnection);
 				}
 

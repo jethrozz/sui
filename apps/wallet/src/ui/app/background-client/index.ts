@@ -151,17 +151,22 @@ export class BackgroundClient {
 	}
 
 	public signData(addressOrID: string, data: Uint8Array): Promise<string> {
+		console.log('backgroundClient signData id', addressOrID);
+		console.log('backgroundClient signData data', data);
+		const base64Data = toBase64(data);
+		console.log('backgroundClient signData base64Data', base64Data);
 		return lastValueFrom(
 			this.sendMessage(
 				createMessage<MethodPayload<'signData'>>({
 					type: 'method-payload',
 					method: 'signData',
-					args: { data: toBase64(data), id: addressOrID },
+					args: { data: base64Data, id: addressOrID },
 				}),
 			).pipe(
 				take(1),
 				map(({ payload }) => {
 					if (isMethodPayload(payload, 'signDataResponse')) {
+						console.log('backgroundClient signDataResponse', payload);
 						return payload.args.signature;
 					}
 					throw new Error('Error unknown response for signData message');
@@ -613,6 +618,7 @@ export class BackgroundClient {
 				queryClient.invalidateQueries({ queryKey: entitiesQueryKey });
 			}
 		}
+		console.log('action', action);
 		if (action) {
 			this._dispatch(action);
 		}

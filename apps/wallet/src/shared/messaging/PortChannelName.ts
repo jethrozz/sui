@@ -4,4 +4,4 @@
 export type PortChannelName =
 	| 'sui_content<->background'
 	| 'sui_ui<->background'
-	| 'other_ext<->background';
+	| 'other_ext<->sui_ui';

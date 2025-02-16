@@ -27,11 +27,12 @@ const appOrigin = new URL(Browser.runtime.getURL('')).origin;
 export class Connections {
 	#connections: Connection[] = [];
 	#uiConnection: UiConnection | null = null;
-	#externalConnections: Map<string, ExternalConnection> = new Map();
+	#externalConnections: Map<string | undefined, ExternalConnection> = new Map();
 
 	constructor() {
 		Browser.runtime.onConnect.addListener((port) => {
 			try {
+				console.log('port create', port);
 				let connection: Connection;
 				switch (port.name) {
 					case ContentScriptConnection.CHANNEL:
@@ -44,6 +45,7 @@ export class Connections {
 							);
 						}
 						const uiConnection = new UiConnection(port);
+						console.log('uiConnection create', uiConnection);
 						this.#uiConnection = uiConnection;
 						connection = uiConnection as Connection; // 类型断言
 						break;
@@ -61,33 +63,50 @@ export class Connections {
 				port.disconnect();
 			}
 		});
-		// 添加外部消息监听器
-		Browser.runtime.onMessageExternal.addListener(async (request, sender, sendResponse) => {
-			try {
-				console.log('external listener request');
-				// 验证发送者
-				if (!sender.id || !ALLOWED_EXTENSION_IDS.includes(sender.id)) {
-					throw new Error('未授权的扩展ID');
-				}
-				console.log('sender:', sender);
-				// 获取或创建外部连接
-				let externalConnection = this.#externalConnections.get(sender.id);
-				if (!externalConnection) {
-					externalConnection = new ExternalConnection(this.#uiConnection!);
-					this.#externalConnections.set(sender.id, externalConnection);
-				}
 
-				// 处理请求
-				const response = await externalConnection.handleMessage(request);
-				return response;
-			} catch (error) {
-				return {
-					success: false,
-					error: error instanceof Error ? error.message : '未知错误',
-				};
+		// 添加外部消息监听器
+		Browser.runtime.onConnectExternal.addListener((port) => {
+			console.log('port onConnectExternal create', port);
+			if (port.name === ExternalConnection.CHANNEL) {
+				let externalConnection = new ExternalConnection(port);
+				this.#externalConnections.set(port.sender?.id, externalConnection);
+				let connection = externalConnection as Connection;
+				this.#connections.push(connection);
+				connection.onDisconnect.subscribe(() => {
+					const connectionIndex = this.#connections.indexOf(connection);
+					if (connectionIndex >= 0) {
+						this.#connections.splice(connectionIndex, 1);
+					}
+				});
 			}
-			return true; // 保持消息通道开放以进行异步响应
 		});
+
+		// Browser.runtime.onMessageExternal.addListener(async (request, sender, sendResponse) => {
+		// 	try {
+		// 		console.log('external listener request');
+		// 		// 验证发送者
+		// 		if (!sender.id || !ALLOWED_EXTENSION_IDS.includes(sender.id)) {
+		// 			throw new Error('未授权的扩展ID');
+		// 		}
+		// 		console.log('sender:', sender);
+		// 		// 获取或创建外部连接
+		// 		let externalConnection = this.#externalConnections.get(sender.id);
+		// 		if (!externalConnection) {
+		// 			//externalConnection = new ExternalConnection(this.#uiConnection!);
+		// 			this.#externalConnections.set(sender.id, externalConnection);
+		// 		}
+		// 		console.log('external connection create ', externalConnection);
+		// 		// 处理请求
+		// 		//const response = await externalConnection.handleMessage(request);
+		// 		return response;
+		// 	} catch (error) {
+		// 		return {
+		// 			success: false,
+		// 			error: error instanceof Error ? error.message : '未知错误',
+		// 		};
+		// 	}
+		// 	return true; // 保持消息通道开放以进行异步响应
+		// });
 	}
 
 	public notifyContentScript(

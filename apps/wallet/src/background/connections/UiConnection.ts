@@ -111,10 +111,10 @@ export class UiConnection extends Connection {
 			} else if (isTransactionRequestResponse(payload)) {
 				Transactions.handleMessage(payload);
 			} else if (isGetTransactionRequests(payload)) {
-				this.sendTransactionRequests(
-					Object.values(await Transactions.getTransactionRequests()),
-					id,
-				);
+				console.log('ui getTransactionRequests');
+				const txRequests = await Transactions.getTransactionRequests();
+				console.log('ui getTransactionRequests txRequests', txRequests);
+				this.sendTransactionRequests(Object.values(txRequests), id);
 			} else if (isDisconnectApp(payload)) {
 				await Permissions.delete(payload.origin, payload.specificAccounts);
 				this.send(createMessage({ type: 'done' }, id));
@@ -187,9 +187,10 @@ export class UiConnection extends Connection {
 				await rejectQredoConnection(payload.args);
 				this.send(createMessage({ type: 'done' }, id));
 			} else if (isMethodPayload(payload, 'getStoredEntities')) {
+				console.log('ui getStoredEntities', payload);
 				const entities = await this.getUISerializedEntities(payload.args.type);
 				console.log('ui getStoredEntities', entities);
-				this.send(
+				let res = this.send(
 					createMessage<MethodPayload<'storedEntitiesResponse'>>(
 						{
 							method: 'storedEntitiesResponse',
@@ -202,6 +203,7 @@ export class UiConnection extends Connection {
 						msg.id,
 					),
 				);
+				console.log('ui getStoredEntities res ', res);
 			} else if (await accountSourcesHandleUIMessage(msg, this)) {
 				return;
 			} else if (await accountsHandleUIMessage(msg, this)) {

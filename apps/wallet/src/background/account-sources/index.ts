@@ -9,6 +9,7 @@ import {
 import { toEntropy } from '_src/shared/utils/bip39';
 
 import { type UiConnection } from '../connections/UiConnection';
+import { type ExternalConnection } from '../connections/ExternalConnection';
 import { getDB } from '../db';
 import { type QredoConnectIdentity } from '../qredo/types';
 import { isSameQredoConnection } from '../qredo/utils';
@@ -100,7 +101,10 @@ export async function lockAllAccountSources() {
 	}
 }
 
-export async function accountSourcesHandleUIMessage(msg: Message, uiConnection: UiConnection) {
+export async function accountSourcesHandleUIMessage(
+	msg: Message,
+	uiConnection: UiConnection | ExternalConnection,
+) {
 	const { payload } = msg;
 	if (isMethodPayload(payload, 'createAccountSource')) {
 		await uiConnection.send(

@@ -44,7 +44,9 @@ type MethodPayloads = {
 		  };
 	accountsCreatedResponse: { accounts: SerializedUIAccount[] };
 	signData: { data: string; id: string };
+	signTransactionData: { data: string; id: string };
 	signDataResponse: { signature: string };
+	signTransactionDataResponse: { signature: string };
 	entitiesUpdated: { type: UIAccessibleEntityType };
 	getStorageMigrationStatus: null;
 	storageMigrationStatus: { status: Status };

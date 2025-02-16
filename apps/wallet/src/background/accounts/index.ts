@@ -7,12 +7,14 @@ import {
 	type MethodPayload,
 } from '_src/shared/messaging/messages/payloads/MethodPayload';
 import { type WalletStatusChange } from '_src/shared/messaging/messages/payloads/wallet-status-change';
+import { messageWithIntent } from '@mysten/sui/cryptography';
 import { fromBase64 } from '@mysten/sui/utils';
 import Dexie from 'dexie';
 
 import { getAccountSourceByID } from '../account-sources';
 import { accountSourcesEvents } from '../account-sources/events';
 import { MnemonicAccountSource } from '../account-sources/MnemonicAccountSource';
+import { type ExternalConnection } from '../connections/ExternalConnection';
 import { type UiConnection } from '../connections/UiConnection';
 import { backupDB, getDB } from '../db';
 import { LegacyVault } from '../legacy-accounts/LegacyVault';
@@ -190,7 +192,10 @@ export async function lockAllAccounts() {
 	}
 }
 
-export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConnection) {
+export async function accountsHandleUIMessage(
+	msg: Message,
+	uiConnection: UiConnection | ExternalConnection,
+) {
 	console.log('accountsHandleUIMessage', msg);
 	const { payload } = msg;
 	if (isMethodPayload(payload, 'lockAccountSourceOrAccount')) {
@@ -225,6 +230,7 @@ export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConn
 	}
 	if (isMethodPayload(payload, 'signData')) {
 		const { id, data } = payload.args;
+		console.log('accountsHandleUIMessage signData', data);
 		const account = await getAccountByID(id);
 		if (!account) {
 			throw new Error(`Account with address ${id} not found`);
@@ -238,6 +244,30 @@ export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConn
 					type: 'method-payload',
 					method: 'signDataResponse',
 					args: { signature: await account.signData(fromBase64(data)) },
+				},
+				msg.id,
+			),
+		);
+		return true;
+	}
+	if (isMethodPayload(payload, 'signTransactionData')) {
+		const { id, data } = payload.args;
+		console.log('accountsHandleUIMessage signTransactionData', data);
+		const account = await getAccountByID(id);
+		if (!account) {
+			throw new Error(`Account with address ${id} not found`);
+		}
+		if (!isSigningAccount(account)) {
+			throw new Error(`Account with address ${id} is not a signing account`);
+		}
+		let bytes = fromBase64(data);
+		let intent = messageWithIntent('TransactionData', bytes);
+		await uiConnection.send(
+			createMessage<MethodPayload<'signTransactionDataResponse'>>(
+				{
+					type: 'method-payload',
+					method: 'signTransactionDataResponse',
+					args: { signature: await account.signData(intent) },
 				},
 				msg.id,
 			),

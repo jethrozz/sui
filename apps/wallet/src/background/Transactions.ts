@@ -89,10 +89,12 @@ class Transactions {
 	}
 
 	public async getTransactionRequests(): Promise<Record<string, ApprovalRequest>> {
+		console.log('getTransactionRequests storeKey', TX_STORE_KEY);
 		return (await Browser.storage.local.get({ [TX_STORE_KEY]: {} }))[TX_STORE_KEY];
 	}
 
 	public async getTransactionRequest(txRequestID: string): Promise<ApprovalRequest | null> {
+		console.log('getTransactionRequests txRequestID', txRequestID);
 		return (await this.getTransactionRequests())[txRequestID] || null;
 	}
 
